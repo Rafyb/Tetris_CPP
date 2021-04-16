@@ -3,8 +3,6 @@
 
 Grid::Grid() 
 {
-	_nb = 0;
-	
 	_gridFixed = (bool**) malloc(sizeof(bool*) * GRID_WIDTH);
 	for (int i = 0; i < GRID_WIDTH; i++) {
 		_gridFixed[i] = (bool*)malloc(sizeof(bool) * GRID_HEIGHT);
@@ -17,42 +15,26 @@ Grid::Grid()
 
 Grid::~Grid()
 {
+	/*
 	for (int i = 0; i < GRID_WIDTH; i++) {
 		free(_gridFixed[i]);
 	}
-	free(_gridFixed);
-}
-
-
-void Grid::Initialize(sf::Texture* textures) 
-{
-	_blockTxt = textures;
-}
-
-Bloc* Grid::InstantiateBloc() 
-{
-	Bloc* newBloc = new Bloc();
-	newBloc->Initialize(_blockTxt[0]);
-
-	//_blocs.push_back(&newBloc);
-
-	_nb++;
-	return newBloc;
+	free(_gridFixed);*/
 }
 
 bool Grid::CanMove(int x, int y)
 {
 	if (x < 0 || x >= GRID_WIDTH) return false;
 	if (y >= GRID_HEIGHT) return false;
-	
+	if (y < 0 ) return true;
 	return !_gridFixed[x][y];
 }
 
-void Grid::Fix(Bloc bloc)
+void Grid::Fix(std::vector<Bloc*> blocs)
 {
-	std::cout << "Fixed X:" << bloc.gridX << " Y:" << bloc.gridY << "\n";
-	_gridFixed[bloc.gridX][bloc.gridY] = true;
-	std::cout << !_gridFixed[bloc.gridX][bloc.gridY] << "\n";
+	for (int i = 0; i < blocs.size(); i++) {
+		_gridFixed[blocs[i]->gridX][blocs[i]->gridY] = true;
+	}
 }
 
 int Grid::HasLine() 

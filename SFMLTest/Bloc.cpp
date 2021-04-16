@@ -1,7 +1,7 @@
 #include "Bloc.h";
 #include <iostream>
 
-Bloc::Bloc() :gridX(0), gridY(0)
+Bloc::Bloc() :gridX(0), gridY(-1)
 {
 
 }

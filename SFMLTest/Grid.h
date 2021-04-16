@@ -8,16 +8,14 @@ class Grid
 public:
 	Grid();
 	~Grid();
-	void Initialize(sf::Texture *textures);
+
 	Bloc* InstantiateBloc();
 	bool CanMove(int x, int y);
-	//void Draw(sf::RenderWindow& window);
-	void Fix(Bloc bloc);
+	void Fix(std::vector<Bloc*> blocs);
 	int HasLine();
 	void UpdateGrid(std::vector<Bloc*> blocs);
 
 private:
 	bool** _gridFixed;
-	sf::Texture* _blockTxt;
-	int _nb;
+
 };

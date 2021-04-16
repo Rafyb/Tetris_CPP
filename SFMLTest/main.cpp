@@ -1,10 +1,62 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 #include "Constants.h"
 #include "Entity.h"
 #include "Bloc.h"
+#include "BlocGroup.h"
 #include "main.h"
 #include "Grid.h"
+
+char form1[4][4] = {
+    {'-','-','-','-'},
+    {'-','-','-','-'},
+    {'-','#','-','-'},
+    {'#','#','#','-'}
+};
+
+char form2[4][4] = {
+    {'#','-','-','-'},
+    {'#','-','-','-'},
+    {'#','-','-','-'},
+    {'#','-','-','-'}
+};
+
+char form3[4][4] = {
+    {'-','-','-','-'},
+    {'-','-','-','-'},
+    {'#','#','-','-'},
+    {'#','#','-','-'}
+};
+
+char form4[4][4] = {
+    {'-','-','-','-'},
+    {'-','-','-','-'},
+    {'#','-','-','-'},
+    {'#','#','#','-'}
+};
+
+char form5[4][4] = {
+    {'-','-','-','-'},
+    {'-','-','-','-'},
+    {'-','-','#','-'},
+    {'#','#','#','-'}
+};
+
+char form6[4][4] = {
+    {'-','-','-','-'},
+    {'-','-','-','-'},
+    {'-','#','#','-'},
+    {'#','#','-','-'}
+};
+
+char form7[4][4] = {
+    {'-','-','-','-'},
+    {'-','-','-','-'},
+    {'-','#','#','-'},
+    {'#','#','-','-'}
+};
 
 // Entities
 std::vector<Entity*> entities;
@@ -18,7 +70,7 @@ sf::Font font;
 
 // Controllers
 Grid plateau;
-Bloc* currentBlock;
+BlocGroup* currentBlock;
 bool _pressed = false;
 
 int Load() 
@@ -68,11 +120,13 @@ void eventUpdate(sf::RenderWindow& window)
             window.close();
 
         if (event.type == sf::Event::KeyPressed)
-            std::cout << "Click\n";
-
+        {
+            //std::cout << "Click\n";
+        }
+        
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         {
-            if (!_pressed && plateau.CanMove(currentBlock->gridX - 1, currentBlock->gridY)) {
+            if (!_pressed && currentBlock->CanMove(plateau, sf::Vector2f(-1, 0)) ) {
                 currentBlock->Move(sf::Vector2f(-1, 0));
                 _pressed = true;
             }
@@ -80,8 +134,21 @@ void eventUpdate(sf::RenderWindow& window)
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
         {
-            if (!_pressed && plateau.CanMove(currentBlock->gridX + 1, currentBlock->gridY)) {
+            if (!_pressed && currentBlock->CanMove(plateau, sf::Vector2f(1, 0))) {
                 currentBlock->Move(sf::Vector2f(1, 0));
+                _pressed = true;
+            }
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+        {
+            if (!_pressed && currentBlock->CanMove(plateau, sf::Vector2f(0, 1))) {
+                currentBlock->Move(sf::Vector2f(0, 1));
+                _pressed = true;
+            }
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+        {
+            if (!_pressed && currentBlock->Rorate(plateau) ) {
                 _pressed = true;
             }
         }
@@ -106,10 +173,38 @@ bool removeAllFromY(int y)
 void downAllUpperThanY(int y)
 {
     for (int i = 0; i < blocs.size(); i++) {
-        if (blocs[i]->gridY > y) {
+        if (blocs[i]->gridY < y) {
             blocs[i]->Move(sf::Vector2f(0,1));
         }
     }
+}
+
+void initNewBloc(int formIdx)
+{
+    BlocGroup* forme = new BlocGroup();
+    std::vector<Bloc*> blocsTmp;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if ((formIdx == 0 && form2[j][i] == '#') || // bar en / bleu clair
+                (formIdx == 1 && form4[j][i] == '#') || 
+                (formIdx == 2 && form5[j][i] == '#') ||
+                (formIdx == 3 && form1[j][i] == '#') || // haut du T / en violet
+                (formIdx == 4 && form3[j][i] == '#') || // bloc / en jaune
+                (formIdx == 5 && form6[j][i] == '#') ||
+                (formIdx == 6 && form7[j][i] == '#') 
+                )
+            {
+                blocs.push_back(new Bloc());
+                blocs[blocs.size() - 1]->gridX = (+4 + i);
+                blocs[blocs.size() - 1]->gridY = (-2 + j);
+                blocsTmp.push_back(blocs[blocs.size() - 1]);
+            }
+        }
+    }
+
+    forme->Initialize(blockTxt[formIdx], blocsTmp);
+    currentBlock = forme;
 }
 
 
@@ -119,6 +214,9 @@ int main()
 
     if (!Load()) return 1;
 
+    srand(time(NULL));
+
+    bool finished = false;
     int score = 0;
 
     sf::Text text1;
@@ -145,8 +243,6 @@ int main()
     text4.setCharacterSize(24);
     text4.setPosition(80 * 4 + 70, 260);
     ui.push_back(text4);
-    //text.setColor(sf::Color::White);
-   // text.setStyle(sf::Text::Bold | sf::Text::Underlined);
 
     // Background -----------------------
     Entity background;
@@ -157,13 +253,7 @@ int main()
 
     entities.push_back(&background);
     
-    // Plateau de jeu -------------------
-    plateau.Initialize(blockTxt);
-    
-    blocs.push_back(plateau.InstantiateBloc());
-    currentBlock = blocs[blocs.size()-1];
-    //entities.push_back(&(currentBlock->GetEntity()));
-    
+    initNewBloc(rand() % 6);
 
     // Game Loop
     sf::Clock clock;
@@ -171,60 +261,78 @@ int main()
     float speed = 0.3f;
     while (window.isOpen())
     {
-        eventUpdate(window);
+        if (finished)
+        {
+            entities.clear();
+            blocs.clear();
+            ui.clear();
+            sf::Text text;
+            text.setFont(font);
+            text.setString("PERDU");
+            text.setCharacterSize(54);
+            text.setPosition(20, 60);
+            ui.push_back(text);
+        }
+        else
+        {
+            eventUpdate(window);
 
-        timeSum += clock.restart().asSeconds();
-        if (timeSum >= speed) {
-            timeSum -= speed;
-            if(plateau.CanMove(currentBlock->gridX, currentBlock->gridY+1)) currentBlock->UpdateStep();
-            else {
-                plateau.Fix(*currentBlock);
-
-                // Controle des lignes
-                int lineY = plateau.HasLine();
-                while (lineY != -1)
+            timeSum += clock.restart().asSeconds();
+            if (timeSum >= speed) {
+                timeSum -= speed;
+                if (!currentBlock->UpdateStep(plateau))
                 {
-                    // Suppresion de la ligne lignes
-                    while (removeAllFromY(lineY))
-                    { 
-                        score += 10;
+                    std::cout << "FIXED\n\n";
+                    plateau.Fix(currentBlock->GetBlocs());
+
+                    // Controle des lignes
+                    int lineY = plateau.HasLine();
+                    while (lineY != -1)
+                    {
+                        // Suppresion de la ligne lignes
+                        while (removeAllFromY(lineY))
+                        {
+                            score += 10;
+                        }
+                        // Decentes des blocs
+                        downAllUpperThanY(lineY);
+
+                        // Update grille
+                        plateau.UpdateGrid(blocs);
+
+                        // Reverification des lignes
+                        lineY = plateau.HasLine();
+
                     }
-                    // Decentes des blocs
-                    downAllUpperThanY(lineY);
+                    initNewBloc(rand() % 6);
 
-                    // Update grille
-                    plateau.UpdateGrid(blocs);
-
-                    // Reverification des lignes
-                    lineY = plateau.HasLine();
 
                 }
-
-                blocs.push_back(plateau.InstantiateBloc());
-                currentBlock = blocs[blocs.size()-1];
-                //entities.push_back(&(currentBlock->GetEntity()));
 
 
             }
         }
-
-        window.clear();
-
-        // Entities
-        for (int i = 0; i < entities.size(); i++) {
-            entities[i]->Draw(window);
-        }
-        // Entities
-        for (int i = 0; i < blocs.size(); i++) {
-            blocs[i]->GetEntity().Draw(window);
-        }
-        // UI
-        ui[1].setString(std::to_string(score));
-        for (int i = 0; i < ui.size(); i++) {
-            window.draw(ui[i]);
-        }
         
-        window.display();
+
+            window.clear();
+
+            // Entities
+            for (int i = 0; i < entities.size(); i++) {
+                entities[i]->Draw(window);
+            }
+            // Blocs
+            for (int i = 0; i < blocs.size(); i++) {
+                blocs[i]->GetEntity().Draw(window);
+            }
+            // UI
+            ui[1].setString(std::to_string(score));
+            for (int i = 0; i < ui.size(); i++) {
+                window.draw(ui[i]);
+            }
+
+            window.display();
+
+        
     }
 
     return 0;
