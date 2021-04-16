@@ -1,3 +1,3 @@
 ﻿  main.cpp
-D:\Utilisateurs\Raphael\Dev\Prog\SFMLTest\SFMLTest\main.cpp(217,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+D:\Utilisateurs\Raphael\Dev\Prog\SFMLTest\SFMLTest\main.cpp(230,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   SFMLTest.vcxproj -> D:\Utilisateurs\Raphael\Dev\Prog\SFMLTest\x64\Debug\SFMLTest.exe

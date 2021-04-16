@@ -71,6 +71,7 @@ sf::Font font;
 // Controllers
 Grid plateau;
 BlocGroup* currentBlock;
+BlocGroup* nextBlock;
 bool _pressed = false;
 
 int Load() 
@@ -141,9 +142,8 @@ void eventUpdate(sf::RenderWindow& window)
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
         {
-            if (!_pressed && currentBlock->CanMove(plateau, sf::Vector2f(0, 1))) {
+            if ( currentBlock->CanMove(plateau, sf::Vector2f(0, 1))) {
                 currentBlock->Move(sf::Vector2f(0, 1));
-                _pressed = true;
             }
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
@@ -162,7 +162,7 @@ void eventUpdate(sf::RenderWindow& window)
 bool removeAllFromY(int y)
 {
     for (int i = 0; i < blocs.size(); i++) {
-        if (blocs[i]->gridY == y) {
+        if (blocs[i]->gridY == y && blocs[i]->gridX < GRID_WIDTH) {
             blocs.erase(blocs.begin()+i);
             return true;
         }
@@ -173,13 +173,13 @@ bool removeAllFromY(int y)
 void downAllUpperThanY(int y)
 {
     for (int i = 0; i < blocs.size(); i++) {
-        if (blocs[i]->gridY < y) {
+        if (blocs[i]->gridY < y && blocs[i]->gridX < GRID_WIDTH) {
             blocs[i]->Move(sf::Vector2f(0,1));
         }
     }
 }
 
-void initNewBloc(int formIdx)
+BlocGroup* initNewBloc(int formIdx)
 {
     BlocGroup* forme = new BlocGroup();
     std::vector<Bloc*> blocsTmp;
@@ -204,7 +204,20 @@ void initNewBloc(int formIdx)
     }
 
     forme->Initialize(blockTxt[formIdx], blocsTmp);
-    currentBlock = forme;
+    return forme;
+}
+
+void NextGroupShow()
+{
+    nextBlock = initNewBloc(rand() % 6);
+    nextBlock->Move(sf::Vector2f(9.5, 4));
+}
+
+void SwitchNext()
+{
+    currentBlock = nextBlock;
+    currentBlock->Move(sf::Vector2f(-9.5, -4));
+    NextGroupShow();
 }
 
 
@@ -253,7 +266,8 @@ int main()
 
     entities.push_back(&background);
     
-    initNewBloc(rand() % 6);
+    NextGroupShow();
+    SwitchNext();
 
     // Game Loop
     sf::Clock clock;
@@ -261,51 +275,66 @@ int main()
     float speed = 0.3f;
     while (window.isOpen())
     {
+        eventUpdate(window);
+
         if (finished)
         {
-            entities.clear();
-            blocs.clear();
-            ui.clear();
+            
+            if (entities.size() > 0) entities.clear();
+            if (blocs.size() > 0) blocs.clear();
+
+            // Black Screen ---------------------
+            sf::RectangleShape rectangle(sf::Vector2f(0, 0));
+            rectangle.setSize(sf::Vector2f(80 * 6 + 120, 160 * 5));
+            rectangle.setFillColor(sf::Color(255, 255, 255));
+            ui[1].setString(std::to_string(score));
+
             sf::Text text;
             text.setFont(font);
-            text.setString("PERDU");
+            text.setString("GAME OVER");
             text.setCharacterSize(54);
             text.setPosition(20, 60);
             ui.push_back(text);
+
+            
         }
         else
         {
-            eventUpdate(window);
-
             timeSum += clock.restart().asSeconds();
             if (timeSum >= speed) {
                 timeSum -= speed;
                 if (!currentBlock->UpdateStep(plateau))
                 {
                     std::cout << "FIXED\n\n";
-                    plateau.Fix(currentBlock->GetBlocs());
-
-                    // Controle des lignes
-                    int lineY = plateau.HasLine();
-                    while (lineY != -1)
+                    if (plateau.isEnd(currentBlock->GetBlocs()))
                     {
-                        // Suppresion de la ligne lignes
-                        while (removeAllFromY(lineY))
-                        {
-                            score += 10;
-                        }
-                        // Decentes des blocs
-                        downAllUpperThanY(lineY);
-
-                        // Update grille
-                        plateau.UpdateGrid(blocs);
-
-                        // Reverification des lignes
-                        lineY = plateau.HasLine();
-
+                        finished = true;
                     }
-                    initNewBloc(rand() % 6);
+                    else
+                    {
+                        plateau.Fix(currentBlock->GetBlocs());
 
+                        // Controle des lignes
+                        int lineY = plateau.HasLine();
+                        while (lineY != -1)
+                        {
+                            // Suppresion de la ligne lignes
+                            while (removeAllFromY(lineY))
+                            {
+                                score += 10;
+                            }
+                            // Decentes des blocs
+                            downAllUpperThanY(lineY);
+
+                            // Update grille
+                            plateau.UpdateGrid(blocs);
+
+                            // Reverification des lignes
+                            lineY = plateau.HasLine();
+
+                        }
+                        SwitchNext();
+                    }
 
                 }
 
@@ -316,19 +345,22 @@ int main()
 
             window.clear();
 
-            // Entities
-            for (int i = 0; i < entities.size(); i++) {
-                entities[i]->Draw(window);
-            }
-            // Blocs
-            for (int i = 0; i < blocs.size(); i++) {
-                blocs[i]->GetEntity().Draw(window);
-            }
-            // UI
-            ui[1].setString(std::to_string(score));
-            for (int i = 0; i < ui.size(); i++) {
-                window.draw(ui[i]);
-            }
+                // Entities
+                for (int i = 0; i < entities.size(); i++) {
+                    entities[i]->Draw(window);
+                }
+
+                // Blocs
+                for (int i = 0; i < blocs.size(); i++) {
+                    blocs[i]->GetEntity().Draw(window);
+                }
+            
+
+                // UI
+                ui[1].setString(std::to_string(score));
+                for (int i = 0; i < ui.size(); i++) {
+                    window.draw(ui[i]);
+                }
 
             window.display();
 

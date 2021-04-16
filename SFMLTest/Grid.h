@@ -12,6 +12,7 @@ public:
 	Bloc* InstantiateBloc();
 	bool CanMove(int x, int y);
 	void Fix(std::vector<Bloc*> blocs);
+	bool isEnd(std::vector<Bloc*> blocs);
 	int HasLine();
 	void UpdateGrid(std::vector<Bloc*> blocs);
 
