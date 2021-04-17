@@ -11,51 +11,52 @@
 
 char form1[4][4] = {
     {'-','-','-','-'},
-    {'-','-','-','-'},
     {'-','#','-','-'},
-    {'#','#','#','-'}
+    {'#','#','#','-'},
+    {'-','-','-','-'}
 };
 
 char form2[4][4] = {
-    {'#','-','-','-'},
-    {'#','-','-','-'},
-    {'#','-','-','-'},
-    {'#','-','-','-'}
+    {'-','#','-','-'},
+    {'-','#','-','-'},
+    {'-','#','-','-'},
+    {'-','#','-','-'}
 };
 
 char form3[4][4] = {
     {'-','-','-','-'},
-    {'-','-','-','-'},
-    {'#','#','-','-'},
-    {'#','#','-','-'}
+    {'-','#','#','-'},
+    {'-','#','#','-'},
+    {'-','-','-','-'}
 };
 
 char form4[4][4] = {
     {'-','-','-','-'},
-    {'-','-','-','-'},
     {'#','-','-','-'},
-    {'#','#','#','-'}
+    {'#','#','#','-'},
+    {'-','-','-','-'}
 };
 
 char form5[4][4] = {
     {'-','-','-','-'},
-    {'-','-','-','-'},
     {'-','-','#','-'},
-    {'#','#','#','-'}
+    {'#','#','#','-'},
+    {'-','-','-','-'}
 };
 
 char form6[4][4] = {
     {'-','-','-','-'},
-    {'-','-','-','-'},
     {'-','#','#','-'},
-    {'#','#','-','-'}
+    {'#','#','-','-'},
+    {'-','-','-','-'}
 };
 
 char form7[4][4] = {
     {'-','-','-','-'},
-    {'-','-','-','-'},
     {'-','#','#','-'},
-    {'#','#','-','-'}
+    {'#','#','-','-'},
+    {'-','-','-','-'}
+
 };
 
 // Entities
@@ -72,6 +73,7 @@ sf::Font font;
 Grid plateau;
 BlocGroup* currentBlock;
 BlocGroup* nextBlock;
+bool locked = false;
 bool _pressed = false;
 
 int Load() 
@@ -120,6 +122,8 @@ void eventUpdate(sf::RenderWindow& window)
         if (event.type == sf::Event::Closed)
             window.close();
 
+        if (locked) return;
+
         if (event.type == sf::Event::KeyPressed)
         {
             //std::cout << "Click\n";
@@ -162,7 +166,7 @@ void eventUpdate(sf::RenderWindow& window)
 bool removeAllFromY(int y)
 {
     for (int i = 0; i < blocs.size(); i++) {
-        if (blocs[i]->gridY == y && blocs[i]->gridX < GRID_WIDTH) {
+        if (blocs[i]->GridY() == y && blocs[i]->GridX() < GRID_WIDTH) {
             blocs.erase(blocs.begin()+i);
             return true;
         }
@@ -173,7 +177,7 @@ bool removeAllFromY(int y)
 void downAllUpperThanY(int y)
 {
     for (int i = 0; i < blocs.size(); i++) {
-        if (blocs[i]->gridY < y && blocs[i]->gridX < GRID_WIDTH) {
+        if (blocs[i]->GridY() < y && blocs[i]->GridX() < GRID_WIDTH) {
             blocs[i]->Move(sf::Vector2f(0,1));
         }
     }
@@ -196,27 +200,41 @@ BlocGroup* initNewBloc(int formIdx)
                 )
             {
                 blocs.push_back(new Bloc());
-                blocs[blocs.size() - 1]->gridX = (+4 + i);
-                blocs[blocs.size() - 1]->gridY = (-2 + j);
+                blocs[blocs.size() - 1]->worldX = (GRID_WIDTH/2)-1;
+                blocs[blocs.size() - 1]->worldY = -4;
+
+                blocs[blocs.size() - 1]->localX = i;
+                blocs[blocs.size() - 1]->localY = j;
+
+                //std::cout << "LocalX : " + std::to_string(i) << "\n";
+                //std::cout << "LocalY : " + std::to_string(j) << "\n\n";
+
                 blocsTmp.push_back(blocs[blocs.size() - 1]);
             }
         }
     }
 
     forme->Initialize(blockTxt[formIdx], blocsTmp);
+    forme->worldX = (GRID_WIDTH / 2)-1;
+    forme->worldY = -4;
+
+    forme->size = 3;
+    if (formIdx == 4) forme->size = 2;
+    if (formIdx == 0) forme->size = 4;
+
     return forme;
 }
 
 void NextGroupShow()
 {
     nextBlock = initNewBloc(rand() % 6);
-    nextBlock->Move(sf::Vector2f(9.5, 4));
+    nextBlock->Move(sf::Vector2f(8.5, 7));
 }
 
 void SwitchNext()
 {
     currentBlock = nextBlock;
-    currentBlock->Move(sf::Vector2f(-9.5, -4));
+    currentBlock->Move(sf::Vector2f(-8.5, -7));
     NextGroupShow();
 }
 
@@ -238,24 +256,30 @@ int main()
     text1.setCharacterSize(24);
     text1.setPosition(80 * 4 + 70, 160*3);
     ui.push_back(text1);
+
     sf::Text text2;
     text2.setFont(font);
     text2.setString(std::to_string(score));
     text2.setCharacterSize(24);
     text2.setPosition(80 * 4 + 70, 160 * 3 + 24);
-    ui.push_back(text2);
+    
     sf::Text text3;
     text3.setFont(font);
     text3.setString("Prochaine piece :");
     text3.setCharacterSize(24);
     text3.setPosition(80 * 4 + 70, 32);
     ui.push_back(text3);
+    
+    /*
     sf::Text text4;
     text4.setFont(font);
     text4.setString("Piece stockee :");
     text4.setCharacterSize(24);
     text4.setPosition(80 * 4 + 70, 260);
     ui.push_back(text4);
+    */
+
+    ui.push_back(text2);
 
     // Background -----------------------
     Entity background;
@@ -287,15 +311,14 @@ int main()
             sf::RectangleShape rectangle(sf::Vector2f(0, 0));
             rectangle.setSize(sf::Vector2f(80 * 6 + 120, 160 * 5));
             rectangle.setFillColor(sf::Color(255, 255, 255));
-            ui[1].setString(std::to_string(score));
+            ui[2].setString(std::to_string(score));
 
             sf::Text text;
             text.setFont(font);
             text.setString("GAME OVER");
             text.setCharacterSize(54);
             text.setPosition(20, 60);
-            ui.push_back(text);
-
+            ui[1] = text;
             
         }
         else
@@ -305,13 +328,14 @@ int main()
                 timeSum -= speed;
                 if (!currentBlock->UpdateStep(plateau))
                 {
-                    std::cout << "FIXED\n\n";
+                    //std::cout << "FIXED\n\n";
                     if (plateau.isEnd(currentBlock->GetBlocs()))
                     {
                         finished = true;
                     }
                     else
                     {
+                        locked = true;
                         plateau.Fix(currentBlock->GetBlocs());
 
                         // Controle des lignes
@@ -334,6 +358,7 @@ int main()
 
                         }
                         SwitchNext();
+                        locked = false;
                     }
 
                 }
@@ -357,7 +382,7 @@ int main()
             
 
                 // UI
-                ui[1].setString(std::to_string(score));
+                ui[2].setString(std::to_string(score));
                 for (int i = 0; i < ui.size(); i++) {
                     window.draw(ui[i]);
                 }

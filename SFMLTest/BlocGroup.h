@@ -14,6 +14,11 @@ public:
 		return _blocs;
 	}
 
+	int worldX;
+	int worldY;
+
+	int size;
+
 	BlocGroup();
 	~BlocGroup();
 

@@ -10,15 +10,27 @@ public :
 	{
 		return _entity;
 	}
-	int gridX;
-	int gridY;
+	inline int GridX()
+	{
+		return worldX + localX;
+	}
+	inline int GridY()
+	{
+		return worldY + localY;
+	}
+
+	int worldX;
+	int worldY;
+
+	int localX;
+	int localY;
 
 	Bloc();
 	~Bloc();
 	void Initialize(const sf::Texture& texture);
 	void SetPosition(int gridX, int gridY);
 	void Move(const sf::Vector2f dir);
-	void UpdateStep();
+	void MoveLocal(const sf::Vector2f dir);
 	
 
 private:

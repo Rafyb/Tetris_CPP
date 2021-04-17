@@ -1,7 +1,7 @@
 #include "Bloc.h";
 #include <iostream>
 
-Bloc::Bloc() :gridX(0), gridY(-1)
+Bloc::Bloc() :worldX(0), worldY(0), localX(0), localY(0)
 {
 
 }
@@ -15,24 +15,26 @@ void Bloc::Initialize(const sf::Texture& texture) {
 	_entity.Initialize(texture);
 	_entity.scale = sf::Vector2f(4,4);
 
-	SetPosition(gridX, gridY);
+	SetPosition(GridX(), GridY());
 }
 
 void Bloc::SetPosition(int gridX, int gridY) 
 {
-	this->gridX = gridX;
-	this->gridY = gridY;
+	this->worldX = gridX;
+	this->worldY = gridY;
 
-	_entity.position.y = gridY * (_entity.scale.y * 8);
-	_entity.position.x = gridX * (_entity.scale.x * 8);
+	_entity.position.x = GridX() * (_entity.scale.x * 8);
+	_entity.position.y = GridY() * (_entity.scale.y * 8);
+	
 }
 
 void Bloc::Move(const sf::Vector2f dir)
 {
-	SetPosition(dir.x + gridX, dir.y + gridY);	
+	SetPosition(dir.x + worldX, dir.y + worldY);
 }
 
-void Bloc::UpdateStep()
+void Bloc::MoveLocal(const sf::Vector2f dir)
 {
-	Move(sf::Vector2f(0, 1));
+	localX += dir.x;
+	localY += dir.y;
 }

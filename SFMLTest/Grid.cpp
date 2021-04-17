@@ -32,7 +32,7 @@ bool Grid::CanMove(int x, int y)
 
 bool Grid::isEnd(std::vector<Bloc*> blocs) {
 	for (int i = 0; i < blocs.size(); i++) {
-		if (blocs[i]->gridY <= 0) return true;
+		if (blocs[i]->GridY() <= 0) return true;
 	}
 	return false;
 }
@@ -41,7 +41,7 @@ bool Grid::isEnd(std::vector<Bloc*> blocs) {
 void Grid::Fix(std::vector<Bloc*> blocs)
 {
 	for (int i = 0; i < blocs.size(); i++) {
-		_gridFixed[blocs[i]->gridX][blocs[i]->gridY] = true;
+		_gridFixed[blocs[i]->GridX()][blocs[i]->GridY()] = true;
 	}
 }
 
@@ -71,6 +71,6 @@ void Grid::UpdateGrid(std::vector<Bloc*> blocs)
 		}
 	}
 	for (int i = 0; i < blocs.size(); i++) {
-		if (blocs[i]->gridX >= 0 && blocs[i]->gridX < GRID_WIDTH && blocs[i]->gridY >= 0 && blocs[i]->gridY < GRID_HEIGHT) _gridFixed[blocs[i]->gridX][blocs[i]->gridY] = true;
+		if (blocs[i]->GridX() >= 0 && blocs[i]->GridX() < GRID_WIDTH && blocs[i]->GridY() >= 0 && blocs[i]->GridY() < GRID_HEIGHT) _gridFixed[blocs[i]->GridX()][blocs[i]->GridY()] = true;
 	}
 }
