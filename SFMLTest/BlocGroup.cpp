@@ -41,6 +41,45 @@ void BlocGroup::Move(const sf::Vector2f dir) {
 }
 
 bool BlocGroup::Rorate(Grid plateau) {
+	if (size == 4) {
+		// On vérifie le sens de la bar
+		bool droit = true;
+		for (int i = 0; i < _blocs.size(); i++) {
+			if (_blocs[i]->localX == 3 && _blocs[i]->localY == 2) droit = false;
+		}
+		
+		if (droit) {
+			// On vériefie si les blocs peuvent bouger
+			for (int i = 0; i < _blocs.size(); i++)
+			{
+				if (_blocs[i]->localX == 1 && _blocs[i]->localY == 3) if (!plateau.CanMove(worldX-1, worldY-1)) return false;
+				if (_blocs[i]->localX == 1 && _blocs[i]->localY == 1) if (!plateau.CanMove(worldX+1, worldY+1)) return false;
+				if (_blocs[i]->localX == 1 && _blocs[i]->localY == 0) if (!plateau.CanMove(worldX+2, worldY + 2)) return false;
+			}
+			// On les bouge
+			for (int i = 0; i < _blocs.size(); i++)
+			{
+				if (_blocs[i]->localX == 1 && _blocs[i]->localY == 3) _blocs[i]->MoveLocal(sf::Vector2f(-1, -1));
+				if (_blocs[i]->localX == 1 && _blocs[i]->localY == 1) _blocs[i]->MoveLocal(sf::Vector2f(+1, +1));
+				if (_blocs[i]->localX == 1 && _blocs[i]->localY == 0) _blocs[i]->MoveLocal(sf::Vector2f(+2, +2));
+			}
+		} else {
+			// On vériefie si les blocs peuvent bouger
+			for (int i = 0; i < _blocs.size(); i++)
+			{
+				if (_blocs[i]->localX == 0 && _blocs[i]->localY == 2) if (!plateau.CanMove(worldX + 1, worldY + 1)) return false;
+				if (_blocs[i]->localX == 2 && _blocs[i]->localY == 2) if (!plateau.CanMove(worldX - 1, worldY - 1)) return false;
+				if (_blocs[i]->localX == 3 && _blocs[i]->localY == 2) if (!plateau.CanMove(worldX - 2, worldY - 2)) return false;
+			}
+			// On les bouge
+			for (int i = 0; i < _blocs.size(); i++)
+			{
+				if (_blocs[i]->localX == 0 && _blocs[i]->localY == 2) _blocs[i]->MoveLocal(sf::Vector2f(+1, +1));
+				if (_blocs[i]->localX == 2 && _blocs[i]->localY == 2) _blocs[i]->MoveLocal(sf::Vector2f(-1, -1));
+				if (_blocs[i]->localX == 3 && _blocs[i]->localY == 2) _blocs[i]->MoveLocal(sf::Vector2f(-2, -2));
+			}
+		}
+	}
 	if (size == 3) 
 	{
 		for (int i = 0; i < _blocs.size(); i++)

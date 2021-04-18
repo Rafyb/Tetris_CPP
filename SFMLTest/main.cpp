@@ -53,8 +53,8 @@ char form6[4][4] = {
 
 char form7[4][4] = {
     {'-','-','-','-'},
-    {'-','#','#','-'},
     {'#','#','-','-'},
+    {'-','#','#','-'},
     {'-','-','-','-'}
 
 };
@@ -66,7 +66,7 @@ std::vector<sf::Text> ui;
 
 // Textures
 sf::Texture bgTxt;
-sf::Texture blockTxt[6];
+sf::Texture blockTxt[7];
 sf::Font font;
 
 // Controllers
@@ -108,6 +108,10 @@ int Load()
         return 0;
     }
     if (!blockTxt[5].loadFromFile("Textures/square_red.png", sf::IntRect(0, 0, 8, 8)))
+    {
+        return 0;
+    }
+    if (!blockTxt[6].loadFromFile("Textures/square_orange.png", sf::IntRect(0, 0, 8, 8)))
     {
         return 0;
     }
@@ -227,7 +231,7 @@ BlocGroup* initNewBloc(int formIdx)
 
 void NextGroupShow()
 {
-    nextBlock = initNewBloc(rand() % 6);
+    nextBlock = initNewBloc(rand() % 7);
     nextBlock->Move(sf::Vector2f(8.5, 7));
 }
 
